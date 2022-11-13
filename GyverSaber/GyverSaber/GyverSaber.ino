@@ -26,10 +26,6 @@
      TRIPLE CLICK - change color (red - green - blue - yellow - pink - ice blue)
      QUINARY CLICK - change sound mode (hum generation - hum playing)
      Selected color and sound mode stored in EEPROM (non-volatile memory)
-     
-   Project GitHub repository: https://github.com/AlexGyver/EnglishProjects/tree/master/GyverSaber
-   YouTube channel: https://www.youtube.com/channel/UCNEOyqhGzutj-YS-d5ckYdg?sub_confirmation=1
-   Author: MadGyver
 */
 
 // ---------------------------- SETTINGS -------------------------------
@@ -72,11 +68,17 @@
 #include <toneAC.h>         // hum generation library
 #include "FastLED.h"        // addressable LED library
 #include <EEPROM.h>
+#include "Arduino.h"
+#include "SoftwareSerial.h"
+#include "DFRobotDFPlayerMini.h"
 
 CRGB leds[NUM_LEDS];
 #define SD_ChipSelectPin 10
 TMRpcm tmrpcm;
 MPU6050 accelgyro;
+SoftwareSerial mySoftwareSerial(7, 5); // RX, TX
+DFRobotDFPlayerMini myDFPlayer;
+void printDetail(uint8_t type, int value);
 // -------------------------- LIBS ---------------------------
 
 
@@ -161,7 +163,30 @@ void setup() {
   setAll(0, 0, 0);             // and turn it off
 
   Wire.begin();
-  Serial.begin(9600);
+  //Audio SetUp
+  mySoftwareSerial.begin(9600);
+  Serial.begin(115200);
+  
+  Serial.println();
+  Serial.println(F("DFRobot DFPlayer Mini Demo"));
+  Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+  
+  if (!myDFPlayer.begin(mySoftwareSerial)) {  //Use softwareSerial to communicate with mp3.
+    Serial.println(F("Unable to begin:"));
+    Serial.println(F("1.Please recheck the connection!"));
+    Serial.println(F("2.Please insert the SD card!"));
+    while(true);
+  
+  Serial.println(F("DFPlayer Mini online."));
+  
+  myDFPlayer.setTimeOut(500); //Set serial communictaion time out 500ms
+  
+  //----Set volume----
+  myDFPlayer.volume(10);  //Set volume value (0~30). 
+  
+  //----Set different EQ----
+  myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
+  myDFPlayer.outputDevice(DFPLAYER_DEVICE_SD);
 
   // ---- НАСТРОЙКА ПИНОВ ----
   pinMode(BTN, INPUT_PULLUP);
@@ -267,7 +292,7 @@ void btnTick() {
         HUMmode = !HUMmode;
         if (HUMmode) {
           noToneAC();
-          tmrpcm.play("HUM.wav");
+          myDFPlayer.play(84);
         } else {
           tmrpcm.disable();
           toneAC(freq_f);
@@ -284,7 +309,7 @@ void on_off_sound() {
     if (!ls_state) {                 // if GyverSaber is turned off
       if (voltage_measure() > 10 || !BATTERY_SAFE) {
         if (DEBUG) Serial.println(F("SABER ON"));
-        tmrpcm.play("ON.wav");
+        myDFPlayer.play(1);
         delay(200);
         light_up();
         delay(200);
@@ -292,7 +317,7 @@ void on_off_sound() {
         ls_state = true;               // remember that turned on
         if (HUMmode) {
           noToneAC();
-          tmrpcm.play("HUM.wav");
+          myDFPlayer.play(84);
         } else {
           tmrpcm.disable();
           toneAC(freq_f);
@@ -309,7 +334,7 @@ void on_off_sound() {
     } else {                         // if GyverSaber is turned on
       noToneAC();
       bzzz_flag = 0;
-      tmrpcm.play("OFF.wav");
+      myDFPlayer.play(11);
       delay(300);
       light_down();
       delay(300);
@@ -326,7 +351,7 @@ void on_off_sound() {
   }
 
   if (((millis() - humTimer) > 9000) && bzzz_flag && HUMmode) {
-    tmrpcm.play("HUM.wav");
+    myDFPlayer.play(84);
     humTimer = millis();
     swing_flag = 1;
     strike_flag = 0;
@@ -360,7 +385,7 @@ void strikeTick() {
     nowNumber = random(8);
     // читаем название трека из PROGMEM
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes_short[nowNumber])));
-    tmrpcm.play(BUFFER);
+    myDFPlayer.play(random(59,81));
     hit_flash();
     if (!HUMmode)
       bzzTimer = millis() + strike_s_time[nowNumber] - FLASH_DELAY;
@@ -373,7 +398,7 @@ void strikeTick() {
     nowNumber = random(8);
     // читаем название трека из PROGMEM
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes[nowNumber])));
-    tmrpcm.play(BUFFER);
+     myDFPlayer.play(random(59,81));
     hit_flash();
     if (!HUMmode)
       bzzTimer = millis() + strike_time[nowNumber] - FLASH_DELAY;
@@ -391,7 +416,7 @@ void swingTick() {
         nowNumber = random(5);          
         // читаем название трека из PROGMEM
         strcpy_P(BUFFER, (char*)pgm_read_word(&(swings[nowNumber])));
-        tmrpcm.play(BUFFER);               
+         myDFPlayer.play(random(36,50));             
         humTimer = millis() - 9000 + swing_time[nowNumber];
         swing_flag = 0;
         swing_timer = millis();
@@ -401,7 +426,7 @@ void swingTick() {
         nowNumber = random(5);            
         // читаем название трека из PROGMEM
         strcpy_P(BUFFER, (char*)pgm_read_word(&(swings_L[nowNumber])));
-        tmrpcm.play(BUFFER);              
+         myDFPlayer.play(random(21,35));             
         humTimer = millis() - 9000 + swing_time_L[nowNumber];
         swing_flag = 0;
         swing_timer = millis();
