@@ -176,13 +176,14 @@ void setup() {
     Serial.println(F("1.Please recheck the connection!"));
     Serial.println(F("2.Please insert the SD card!"));
     while(true);
+  }
   
   Serial.println(F("DFPlayer Mini online."));
   
   myDFPlayer.setTimeOut(500); //Set serial communictaion time out 500ms
   
   //----Set volume----
-  myDFPlayer.volume(10);  //Set volume value (0~30). 
+  myDFPlayer.volume(20);  //Set volume value (0~30). 
   
   //----Set different EQ----
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
@@ -385,7 +386,7 @@ void strikeTick() {
     nowNumber = random(8);
     // читаем название трека из PROGMEM
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes_short[nowNumber])));
-    myDFPlayer.play(random(59,81));
+    myDFPlayer.play(random(59,82));
     hit_flash();
     if (!HUMmode)
       bzzTimer = millis() + strike_s_time[nowNumber] - FLASH_DELAY;
@@ -398,7 +399,7 @@ void strikeTick() {
     nowNumber = random(8);
     // читаем название трека из PROGMEM
     strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes[nowNumber])));
-     myDFPlayer.play(random(59,81));
+     myDFPlayer.play(random(59,82));
     hit_flash();
     if (!HUMmode)
       bzzTimer = millis() + strike_time[nowNumber] - FLASH_DELAY;
@@ -416,7 +417,7 @@ void swingTick() {
         nowNumber = random(5);          
         // читаем название трека из PROGMEM
         strcpy_P(BUFFER, (char*)pgm_read_word(&(swings[nowNumber])));
-         myDFPlayer.play(random(36,50));             
+         myDFPlayer.play(random(36,51));             
         humTimer = millis() - 9000 + swing_time[nowNumber];
         swing_flag = 0;
         swing_timer = millis();
@@ -426,7 +427,7 @@ void swingTick() {
         nowNumber = random(5);            
         // читаем название трека из PROGMEM
         strcpy_P(BUFFER, (char*)pgm_read_word(&(swings_L[nowNumber])));
-         myDFPlayer.play(random(21,35));             
+         myDFPlayer.play(random(21,36));             
         humTimer = millis() - 9000 + swing_time_L[nowNumber];
         swing_flag = 0;
         swing_timer = millis();
