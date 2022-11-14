@@ -103,58 +103,58 @@ int PULSEOffset;
 // ------------------------------ VARIABLES ---------------------------------
 
 // --------------------------------- SOUNDS ----------------------------------
-const char strike1[] PROGMEM = "SK1.wav";
-const char strike2[] PROGMEM = "SK2.wav";
-const char strike3[] PROGMEM = "SK3.wav";
-const char strike4[] PROGMEM = "SK4.wav";
-const char strike5[] PROGMEM = "SK5.wav";
-const char strike6[] PROGMEM = "SK6.wav";
-const char strike7[] PROGMEM = "SK7.wav";
-const char strike8[] PROGMEM = "SK8.wav";
+const int strike1[] PROGMEM = {4};
+const int strike2[] PROGMEM = {5};
+const int strike3[] PROGMEM = {6};
+const int strike4[] PROGMEM = {7};
+const int strike5[] PROGMEM = {8};
+const int strike6[] PROGMEM = {9};
+const int strike7[] PROGMEM = {10};
+const int strike8[] PROGMEM = {11};
 
-const char* const strikes[] PROGMEM  = {
+const int* const strikes[] PROGMEM  = {
   strike1, strike2, strike3, strike4, strike5, strike6, strike7, strike8
 };
 
 int strike_time[8] = {779, 563, 687, 702, 673, 661, 666, 635};
 
-const char strike_s1[] PROGMEM = "SKS1.wav";
-const char strike_s2[] PROGMEM = "SKS2.wav";
-const char strike_s3[] PROGMEM = "SKS3.wav";
-const char strike_s4[] PROGMEM = "SKS4.wav";
-const char strike_s5[] PROGMEM = "SKS5.wav";
-const char strike_s6[] PROGMEM = "SKS6.wav";
-const char strike_s7[] PROGMEM = "SKS7.wav";
-const char strike_s8[] PROGMEM = "SKS8.wav";
+const int strike_s1[] PROGMEM = {12};
+const int strike_s2[] PROGMEM = {13};
+const int strike_s3[] PROGMEM = {14};
+const int strike_s4[] PROGMEM = {15};
+const int strike_s5[] PROGMEM = {16};
+const int strike_s6[] PROGMEM = {17};
+const int strike_s7[] PROGMEM = {18};
+const int strike_s8[] PROGMEM = {19};
 
-const char* const strikes_short[] PROGMEM = {
+const int* const strikes_short[] PROGMEM = {
   strike_s1, strike_s2, strike_s3, strike_s4,
   strike_s5, strike_s6, strike_s7, strike_s8
 };
 int strike_s_time[8] = {270, 167, 186, 250, 252, 255, 250, 238};
 
-const char swing1[] PROGMEM = "SWS1.wav";
-const char swing2[] PROGMEM = "SWS2.wav";
-const char swing3[] PROGMEM = "SWS3.wav";
-const char swing4[] PROGMEM = "SWS4.wav";
-const char swing5[] PROGMEM = "SWS5.wav";
+const int swing1[] PROGMEM = {24};
+const int swing2[] PROGMEM = {25};
+const int swing3[] PROGMEM = {26};
+const int swing4[] PROGMEM = {27};
+const int swing5[] PROGMEM = {28};
 
-const char* const swings[] PROGMEM  = {
+const int* const swings[] PROGMEM  = {
   swing1, swing2, swing3, swing4, swing5
 };
 int swing_time[8] = {389, 372, 360, 366, 337};
 
-const char swingL1[] PROGMEM = "SWL1.wav";
-const char swingL2[] PROGMEM = "SWL2.wav";
-const char swingL3[] PROGMEM = "SWL3.wav";
-const char swingL4[] PROGMEM = "SWL4.wav";
+const int swingL1[] PROGMEM = {20};
+const int swingL2[] PROGMEM = {21};
+const int swingL3[] PROGMEM = {22};
+const int swingL4[] PROGMEM = {23};
 
-const char* const swings_L[] PROGMEM  = {
+const int* const swings_L[] PROGMEM  = {
   swingL1, swingL2, swingL3, swingL4
 };
 int swing_time_L[8] = {636, 441, 772, 702};
 
-char BUFFER[10];
+int BUFFER[10];
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
@@ -180,7 +180,6 @@ void setup() {
   
   Serial.println(F("DFPlayer Mini online."));
   
-  myDFPlayer.setTimeOut(500); //Set serial communictaion time out 500ms
   
   //----Set volume----
   myDFPlayer.volume(20);  //Set volume value (0~30). 
@@ -293,7 +292,7 @@ void btnTick() {
         HUMmode = !HUMmode;
         if (HUMmode) {
           noToneAC();
-          myDFPlayer.play(84);
+          myDFPlayer.play(1);
         } else {
           tmrpcm.disable();
           toneAC(freq_f);
@@ -318,7 +317,7 @@ void on_off_sound() {
         ls_state = true;               // remember that turned on
         if (HUMmode) {
           noToneAC();
-          myDFPlayer.play(84);
+          myDFPlayer.play(1);
         } else {
           tmrpcm.disable();
           toneAC(freq_f);
@@ -335,7 +334,7 @@ void on_off_sound() {
     } else {                         // if GyverSaber is turned on
       noToneAC();
       bzzz_flag = 0;
-      myDFPlayer.play(11);
+      myDFPlayer.play(2);
       delay(300);
       light_down();
       delay(300);
@@ -352,7 +351,7 @@ void on_off_sound() {
   }
 
   if (((millis() - humTimer) > 9000) && bzzz_flag && HUMmode) {
-    myDFPlayer.play(84);
+    myDFPlayer.play(1);
     humTimer = millis();
     swing_flag = 1;
     strike_flag = 0;
@@ -385,8 +384,8 @@ void strikeTick() {
     if (!HUMmode) noToneAC();
     nowNumber = random(8);
     // читаем название трека из PROGMEM
-    strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes_short[nowNumber])));
-    myDFPlayer.play(random(59,82));
+    //strcpy_P(BUFFER, (int*)pgm_read_word(&(strikes_short[nowNumber])));
+    myDFPlayer.play(random(12,20));
     hit_flash();
     if (!HUMmode)
       bzzTimer = millis() + strike_s_time[nowNumber] - FLASH_DELAY;
@@ -398,8 +397,8 @@ void strikeTick() {
     if (!HUMmode) noToneAC();
     nowNumber = random(8);
     // читаем название трека из PROGMEM
-    strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes[nowNumber])));
-     myDFPlayer.play(random(59,82));
+    //strcpy_P(BUFFER, (char*)pgm_read_word(&(strikes[nowNumber])));
+     myDFPlayer.play(random(4,12));
     hit_flash();
     if (!HUMmode)
       bzzTimer = millis() + strike_time[nowNumber] - FLASH_DELAY;
@@ -416,8 +415,8 @@ void swingTick() {
       if (GYR >= SWING_THR) {      
         nowNumber = random(5);          
         // читаем название трека из PROGMEM
-        strcpy_P(BUFFER, (char*)pgm_read_word(&(swings[nowNumber])));
-         myDFPlayer.play(random(36,51));             
+        //strcpy_P(BUFFER, (char*)pgm_read_word(&(swings[nowNumber])));
+        myDFPlayer.play(random(24,29));             
         humTimer = millis() - 9000 + swing_time[nowNumber];
         swing_flag = 0;
         swing_timer = millis();
@@ -426,8 +425,8 @@ void swingTick() {
       if ((GYR > SWING_L_THR) && (GYR < SWING_THR)) {
         nowNumber = random(5);            
         // читаем название трека из PROGMEM
-        strcpy_P(BUFFER, (char*)pgm_read_word(&(swings_L[nowNumber])));
-         myDFPlayer.play(random(21,36));             
+        //strcpy_P(BUFFER, (char*)pgm_read_word(&(swings_L[nowNumber])));
+         myDFPlayer.play(random(20,24));             
         humTimer = millis() - 9000 + swing_time_L[nowNumber];
         swing_flag = 0;
         swing_timer = millis();
