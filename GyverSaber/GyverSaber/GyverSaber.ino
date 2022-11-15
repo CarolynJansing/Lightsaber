@@ -29,9 +29,10 @@
 */
 
 // ---------------------------- SETTINGS -------------------------------
-#define NUM_LEDS 30         // number of microcircuits WS2811 on LED strip (note: one WS2811 controls 3 LEDs!)
-#define BTN_TIMEOUT 800     // button hold delay, ms
-#define BRIGHTNESS 255      // max LED brightness (0 - 255)
+#define NUM_LEDS 60         // number of microcircuits WS2811 on LED strip (note: one WS2811 controls 3 LEDs!)
+#define BTN_TIMEOUT 1200    // button hold delay, ms
+#define BTN_HOLD_TIME 2000  // button hold delay, ms
+#define BRIGHTNESS 200      // max LED brightness (0 - 255)
 
 #define SWING_TIMEOUT 500   // timeout between swings
 #define SWING_L_THR 150     // swing angle speed threshold
@@ -46,9 +47,9 @@
 
 #define R1 100000           // voltage divider real resistance
 #define R2 51000            // voltage divider real resistance
-#define BATTERY_SAFE 1      // battery monitoring (1 - allow, 0 - disallow)
+#define BATTERY_SAFE 0      // battery monitoring (1 - allow, 0 - disallow)
 
-#define DEBUG 0             // debug information in Serial (1 - allow, 0 - disallow)
+#define DEBUG 1             // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
 
 #define LED_PIN 6
@@ -56,7 +57,7 @@
 #define IMU_GND A1
 #define SD_GND A0
 #define VOLT_PIN A6
-#define BTN_LED 4
+#define BTN_LED -1 // -1 -> disable, 4 original
 
 // -------------------------- LIBS ---------------------------
 #include <avr/pgmspace.h>   // PROGMEM library
@@ -79,10 +80,23 @@ MPU6050 accelgyro;
 SoftwareSerial mySoftwareSerial(7, 5); // RX, TX
 DFRobotDFPlayerMini myDFPlayer;
 void printDetail(uint8_t type, int value);
+//CRGB leds[NUM_LEDS];
+
+uint8_t paletteIndex = 0;
+
+DEFINE_GRADIENT_PALETTE (heatmap_gp) {
+  0,   0,   0,   0,     //black
+  128, 255,   0,   0,   //red
+  200, 255, 255,   0,   //bright yellow
+  255, 255, 255, 255    //full white
+};
+
+CRGBPalette16 myPalette = heatmap_gp;
 // -------------------------- LIBS ---------------------------
 
 
 // ------------------------------ VARIABLES ---------------------------------
+
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 unsigned long ACC, GYR, COMPL;
@@ -91,9 +105,7 @@ float k = 0.2;
 unsigned long humTimer = -9000, mpuTimer, nowTimer;
 int stopTimer;
 boolean bzzz_flag, ls_chg_state, ls_state;
-boolean btnState, btn_flag, hold_flag;
-byte btn_counter;
-unsigned long btn_timer, PULSE_timer, swing_timer, swing_timeout, battery_timer, bzzTimer;
+unsigned long PULSE_timer, swing_timer, swing_timeout, battery_timer, bzzTimer;
 byte nowNumber;
 byte LEDcolor;  // 0 - red, 1 - green, 2 - blue, 3 - pink, 4 - yellow, 5 - ice blue
 byte nowColor, red, green, blue, redOffset, greenOffset, blueOffset;
@@ -158,7 +170,7 @@ int BUFFER[10];
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
-  FastLED.addLeds<WS2811, LED_PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
+  FastLED.addLeds<WS2812B, LED_PIN, GRB>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
   FastLED.setBrightness(100);  // ~40% of LED strip brightness
   setAll(0, 0, 0);             // and turn it off
 
@@ -180,7 +192,6 @@ void setup() {
   
   Serial.println(F("DFPlayer Mini online."));
   
-  
   //----Set volume----
   myDFPlayer.volume(20);  //Set volume value (0~30). 
   
@@ -192,10 +203,10 @@ void setup() {
   pinMode(BTN, INPUT_PULLUP);
   pinMode(IMU_GND, OUTPUT);
   pinMode(SD_GND, OUTPUT);
-  pinMode(BTN_LED, OUTPUT);
+  if (BTN_LED > 0) pinMode(BTN_LED, OUTPUT);
   digitalWrite(IMU_GND, 0);
   digitalWrite(SD_GND, 0);
-  digitalWrite(BTN_LED, 1);
+  if (BTN_LED > 0) digitalWrite(BTN_LED, 1);
   // ---- НАСТРОЙКА ПИНОВ ----
 
   randomSeed(analogRead(2));    // starting point for random generator
@@ -210,7 +221,7 @@ void setup() {
   }
 
   // SD initialization
-  tmrpcm.speakerPin = 9;
+ /* tmrpcm.speakerPin = 9;
   tmrpcm.setVolume(5);
   tmrpcm.quality(1);
   if (DEBUG) {
@@ -218,7 +229,7 @@ void setup() {
     else Serial.println(F("SD fail"));
   } else {
     SD.begin(8);
-  }
+  }*/
 
   if ((EEPROM.read(0) >= 0) && (EEPROM.read(0) <= 5)) {  // check first start
     nowColor = EEPROM.read(0);   // remember color
@@ -261,38 +272,55 @@ void loop() {
 // --- MAIN LOOP---
 
 void btnTick() {
-  btnState = !digitalRead(BTN);
-  if (btnState && !btn_flag) {
-    if (DEBUG) Serial.println(F("BTN PRESS"));
-    btn_flag = 1;
-    btn_counter++;
-    btn_timer = millis();
+  // BTN_TIMEOUT, BTN_HOLD_TIMEOUT
+  static unsigned long lastClickStartedOn = 0;
+  static unsigned char clickCounter = 0;
+  static bool lastClickState = false;
+  static bool isClickHeld = false;
+  bool currentClickState = digitalRead(BTN);
+  if (currentClickState and !lastClickState) {
+    lastClickState = true;
+    clickCounter++;
+    lastClickStartedOn = millis();
+    if (DEBUG) {
+      Serial.print(F("BTN PRESS (STATE "));
+      Serial.print(currentClickState);
+      Serial.print(F("; COUNT "));
+      Serial.print(clickCounter);
+      Serial.println(F(")"));
+    }
+  } else if (!currentClickState and lastClickState) {
+    lastClickState = false;
+    isClickHeld = false;
   }
-  if (!btnState && btn_flag) {
-    btn_flag = 0;
-    hold_flag = 0;
+
+  // ...if button is held
+  if(currentClickState and clickCounter == 1 and (millis() - lastClickStartedOn > BTN_HOLD_TIME) and !isClickHeld) {
+    if (DEBUG) Serial.println(F("BTN HELD -> TRIGGER"));
+    ls_chg_state = 1; // flag to change saber state (on/off)
+    isClickHeld = true;
   }
-  // если кнопка удерживается
-  if (btn_flag && btnState && (millis() - btn_timer > BTN_TIMEOUT) && !hold_flag) {
-    ls_chg_state = 1;                     // flag to change saber state (on/off)
-    hold_flag = 1;
-    btn_counter = 0;
-  }
-  // если кнопка была нажата несколько раз до таймаута
-  if ((millis() - btn_timer > BTN_TIMEOUT) && (btn_counter != 0)) {
+
+  // Only process the click if it is being held long enough
+  if(!currentClickState and clickCounter > 0 and (millis() - lastClickStartedOn > BTN_TIMEOUT) and !isClickHeld) {
+    if (DEBUG) Serial.println(F("BTN CLICK PROCESSING!"));
     if (ls_state) {
-      if (btn_counter == 3) {               // 3 press count
+      if (clickCounter == 3) {               // 3 press count
         nowColor++;                         // change color
         if (nowColor >= 6) nowColor = 0;
         setColor(nowColor);
         setAll(red, green, blue);
         eeprom_flag = 1;
       }
-      if (btn_counter == 5) {               // 5 press count
+      if (clickCounter == 4) {
+          //TODO Gradient einbauen
+          FastLED.show();
+          delay(20);
+      } 
+      if (clickCounter == 5) {               // 5 press count
         HUMmode = !HUMmode;
         if (HUMmode) {
-          noToneAC();
-          myDFPlayer.play(1);
+          myDFPlayer.loop(1);
         } else {
           tmrpcm.disable();
           toneAC(freq_f);
@@ -300,7 +328,9 @@ void btnTick() {
         eeprom_flag = 1;
       }
     }
-    btn_counter = 0;
+
+    if (DEBUG) Serial.println(F("BTN TIMEOUT -> COUNTER RESET"));
+    clickCounter = 0;
   }
 }
 
@@ -325,9 +355,9 @@ void on_off_sound() {
       } else {
         if (DEBUG) Serial.println(F("LOW VOLTAGE!"));
         for (int i = 0; i < 5; i++) {
-          digitalWrite(BTN_LED, 0);
+          if (BTN_LED > 0) digitalWrite(BTN_LED, 0);
           delay(400);
-          digitalWrite(BTN_LED, 1);
+          if (BTN_LED > 0) digitalWrite(BTN_LED, 1);
           delay(400);
         }
       }
