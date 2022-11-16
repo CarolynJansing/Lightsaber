@@ -112,58 +112,18 @@ byte nowColor, red, green, blue, redOffset, greenOffset, blueOffset;
 boolean eeprom_flag, swing_flag, swing_allow, strike_flag, HUMmode;
 float voltage;
 int PULSEOffset;
+boolean tenshiMode;
 // ------------------------------ VARIABLES ---------------------------------
 
 // --------------------------------- SOUNDS ----------------------------------
-const int strike1[] PROGMEM = {4};
-const int strike2[] PROGMEM = {5};
-const int strike3[] PROGMEM = {6};
-const int strike4[] PROGMEM = {7};
-const int strike5[] PROGMEM = {8};
-const int strike6[] PROGMEM = {9};
-const int strike7[] PROGMEM = {10};
-const int strike8[] PROGMEM = {11};
 
-const int* const strikes[] PROGMEM  = {
-  strike1, strike2, strike3, strike4, strike5, strike6, strike7, strike8
-};
 
 int strike_time[8] = {779, 563, 687, 702, 673, 661, 666, 635};
 
-const int strike_s1[] PROGMEM = {12};
-const int strike_s2[] PROGMEM = {13};
-const int strike_s3[] PROGMEM = {14};
-const int strike_s4[] PROGMEM = {15};
-const int strike_s5[] PROGMEM = {16};
-const int strike_s6[] PROGMEM = {17};
-const int strike_s7[] PROGMEM = {18};
-const int strike_s8[] PROGMEM = {19};
-
-const int* const strikes_short[] PROGMEM = {
-  strike_s1, strike_s2, strike_s3, strike_s4,
-  strike_s5, strike_s6, strike_s7, strike_s8
-};
 int strike_s_time[8] = {270, 167, 186, 250, 252, 255, 250, 238};
 
-const int swing1[] PROGMEM = {24};
-const int swing2[] PROGMEM = {25};
-const int swing3[] PROGMEM = {26};
-const int swing4[] PROGMEM = {27};
-const int swing5[] PROGMEM = {28};
-
-const int* const swings[] PROGMEM  = {
-  swing1, swing2, swing3, swing4, swing5
-};
 int swing_time[8] = {389, 372, 360, 366, 337};
 
-const int swingL1[] PROGMEM = {20};
-const int swingL2[] PROGMEM = {21};
-const int swingL3[] PROGMEM = {22};
-const int swingL4[] PROGMEM = {23};
-
-const int* const swings_L[] PROGMEM  = {
-  swingL1, swingL2, swingL3, swingL4
-};
 int swing_time_L[8] = {636, 441, 772, 702};
 
 int BUFFER[10];
@@ -193,7 +153,7 @@ void setup() {
   Serial.println(F("DFPlayer Mini online."));
   
   //----Set volume----
-  myDFPlayer.volume(20);  //Set volume value (0~30). 
+  myDFPlayer.volume(1);  //Set volume value (0~30). 
   
   //----Set different EQ----
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
@@ -261,7 +221,9 @@ void setup() {
 
 // --- MAIN LOOP---
 void loop() {
-  randomPULSE();
+  if(!tenshiMode){
+    randomPULSE();
+  }
   getFreq();
   on_off_sound();
   btnTick();
@@ -303,7 +265,7 @@ void btnTick() {
 
   // Only process the click if it is being held long enough
   if(!currentClickState and clickCounter > 0 and (millis() - lastClickStartedOn > BTN_TIMEOUT) and !isClickHeld) {
-    if (DEBUG) Serial.println(F("BTN CLICK PROCESSING!"));
+    if (DEBUG) Serial.println(F("BTN CLICK PROCESSING..."));
     if (ls_state) {
       if (clickCounter == 3) {               // 3 press count
         nowColor++;                         // change color
@@ -313,9 +275,9 @@ void btnTick() {
         eeprom_flag = 1;
       }
       if (clickCounter == 4) {
-          //TODO Gradient einbauen
+          tenshiMode = true;
+          fill_palette(leds, NUM_LEDS, 0 , 255 / NUM_LEDS, myPalette,200, LINEARBLEND);
           FastLED.show();
-          delay(20);
       } 
       if (clickCounter == 5) {               // 5 press count
         HUMmode = !HUMmode;
@@ -324,6 +286,7 @@ void btnTick() {
         } else {
           tmrpcm.disable();
           toneAC(freq_f);
+          // DOES NOT WORK? -> -> -> myDFPlayer.disableLoopAll();
         }
         eeprom_flag = 1;
       }
@@ -339,7 +302,7 @@ void on_off_sound() {
     if (!ls_state) {                 // if GyverSaber is turned off
       if (voltage_measure() > 10 || !BATTERY_SAFE) {
         if (DEBUG) Serial.println(F("SABER ON"));
-        myDFPlayer.play(1);
+        myDFPlayer.play(3);//Play On sound
         delay(200);
         light_up();
         delay(200);
@@ -347,7 +310,7 @@ void on_off_sound() {
         ls_state = true;               // remember that turned on
         if (HUMmode) {
           noToneAC();
-          myDFPlayer.play(1);
+          myDFPlayer.loop(1);
         } else {
           tmrpcm.disable();
           toneAC(freq_f);
@@ -361,10 +324,11 @@ void on_off_sound() {
           delay(400);
         }
       }
-    } else {                         // if GyverSaber is turned on
+    } else {       // if GyverSaber is turned on
+      tenshiMode=false;                  
       noToneAC();
       bzzz_flag = 0;
-      myDFPlayer.play(2);
+      myDFPlayer.play(2);//play off sound
       delay(300);
       light_down();
       delay(300);
@@ -381,7 +345,7 @@ void on_off_sound() {
   }
 
   if (((millis() - humTimer) > 9000) && bzzz_flag && HUMmode) {
-    myDFPlayer.play(1);
+    myDFPlayer.loop(1);
     humTimer = millis();
     swing_flag = 1;
     strike_flag = 0;
@@ -392,12 +356,13 @@ void on_off_sound() {
       tmrpcm.disable();
       strike_flag = 0;
     }
-    toneAC(freq_f);
+    toneAC(freq_f,1);
     bzzTimer = millis();
   }
 }
 
 void randomPULSE() {
+  
   if (PULSE_ALLOW && ls_state && (millis() - PULSE_timer > PULSE_DELAY)) {
     PULSE_timer = millis();
     PULSEOffset = PULSEOffset * k + random(-PULSE_AMPL, PULSE_AMPL) * (1 - k);
