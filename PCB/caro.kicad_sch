@@ -1339,7 +1339,7 @@
   (symbol (lib_id "MCU_Module:Arduino_Nano_v3.x") (at 72.39 107.95 0) (unit 1)
     (in_bom yes) (on_board yes) (fields_autoplaced)
     (uuid ced11390-2682-4807-887b-321629abfbac)
-    (property "Reference" "Arduino1" (id 0) (at 76.9494 133.35 0)
+    (property "Reference" "U2" (id 0) (at 76.9494 133.35 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Value" "Arduino_Nano_v3.x" (id 1) (at 76.9494 135.89 0)
@@ -1410,9 +1410,6 @@
     (path "/9198dd59-bbdc-4151-b78a-f8eda00f0f59"
       (reference "#PWR02") (unit 1) (value "GND") (footprint "")
     )
-    (path "/ced11390-2682-4807-887b-321629abfbac"
-      (reference "Arduino1") (unit 1) (value "Arduino_Nano_v3.x") (footprint "Module:Arduino_Nano")
-    )
     (path "/ae1091f9-be9a-4c5e-a932-4d89f59d1190"
       (reference "LED1") (unit 1) (value "Control Button LED") (footprint "Connector_PinHeader_2.54mm:PinHeader_2x01_P2.54mm_Vertical")
     )
@@ -1439,6 +1436,9 @@
     )
     (path "/3c2df778-1dff-4e9d-9ef9-cf30f20e6448"
       (reference "U1") (unit 1) (value "DFR0299") (footprint "DFR0299:MODULE_DFR0299")
+    )
+    (path "/ced11390-2682-4807-887b-321629abfbac"
+      (reference "U2") (unit 1) (value "Arduino_Nano_v3.x") (footprint "Module:Arduino_Nano")
     )
   )
 )
