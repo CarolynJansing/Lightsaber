@@ -2,9 +2,12 @@
 A lightsaber is a fictional energy sword featured in the Star Wars franchise. This project is a simulation of a lightsaber using LEDs, Sound and an Arduino microcontroller. It is based on the Gyversaber. https://www.instructables.com/Arduino-Based-Lightsaber-With-Light-and-Sound-Effe/
 
 ## Files
+
 ArduinoCode : GyverSaber/GyverSaber/Gyversaber.ino
+
 SD Files : GyverSaber/SDsounds
-Schemes: Schemes/
+
+Schemes: PCB/
 
 
 ## Getting Started
