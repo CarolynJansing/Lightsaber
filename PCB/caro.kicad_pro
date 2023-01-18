@@ -398,7 +398,7 @@
   },
   "pcbnew": {
     "last_paths": {
-      "gencad": "",
+      "gencad": "caro.cad",
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
