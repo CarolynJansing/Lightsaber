@@ -1,4 +1,7 @@
-[![MadGyver YouTube](http://alexgyver.ru/git_madgyver.jpg)](https://www.youtube.com/channel/UCNEOyqhGzutj-YS-d5ckYdg?sub_confirmation=1)
+# This project is based on Gyversaber
+ See his inmstructions below
+
+
 # GyverSaber - Arduino based multicolor sound playing lightsaber
 * [Project description](#chapter-0)
 * [Folders](#chapter-1)
