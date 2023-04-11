@@ -29,7 +29,7 @@
 */
 
 // ---------------------------- SETTINGS -------------------------------
-#define NUM_LEDS 30         // number of microcircuits WS2811 on LED strip (note: one WS2811 controls 3 LEDs!)
+#define NUM_LEDS 40         // number of microcircuits WS2811 on LED strip (note: one WS2811 controls 3 LEDs!)
 #define BTN_TIMEOUT 1200    // button hold delay, ms
 #define BTN_HOLD_TIME 2000  // button hold delay, ms
 #define BRIGHTNESS 255      // max LED brightness (0 - 255)
@@ -50,12 +50,12 @@
 #define DEBUG 1  // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
 
-#define LED_PIN 6
-#define BTN 3
+#define LED_PIN D4
+#define BTN D7
 #define IMU_GND A1
 #define SD_GND A0
 #define VOLT_PIN A6
-#define BTN_LED -1  // -1 -> disable, 4 original
+#define BTN_LED D3 // -1 -> disable, 4 original
 #define SD_ChipSelectPin 10
 
 // -------------------------- LIBS ---------------------------
@@ -74,7 +74,7 @@
 
 TMRpcm tmrpcm;
 MPU6050 accelgyro;
-SoftwareSerial mySoftwareSerial(7, 5);  // RX, TX
+SoftwareSerial mySoftwareSerial(D5, D6);  // RX, TX
 
 DFRobotDFPlayerMini myDFPlayer;
 void printDetail(uint8_t type, int value);
@@ -117,10 +117,11 @@ int BUFFER[10];
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
+  pinMode(D7, INPUT_PULLUP);
   Serial.begin(115200);
 
   FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(250);  // ~40% of LED strip brightness
+  FastLED.setBrightness(255);  // ~40% of LED strip brightness
   setAll(0, 0, 0);             // and turn it off
 
   Wire.begin();
@@ -133,14 +134,12 @@ void setup() {
     Serial.println(F("Unable to begin:"));
     Serial.println(F("1.Please recheck the connection!"));
     Serial.println(F("2.Please insert the SD card!"));
-    while (true)
-      ;
   }
 
   Serial.println(F("DFPlayer Mini online."));
 
   //----Set volume----
-  myDFPlayer.volume(30);  // Set volume value (0~30).
+  myDFPlayer.volume(20);  // Set volume value (0~30).
 
   //----Set different EQ----
   myDFPlayer.EQ(DFPLAYER_EQ_NORMAL);
@@ -215,16 +214,18 @@ void setup() {
 void loop() {
   if (!tenshiMode) {
     randomPULSE();
+    getFreq();
+    on_off_sound();
+    btnTick();
+    strikeTick();
+    swingTick();
   } else {
+    on_off_sound();
+    btnTick();
     Fire2012();      // run simulation frame
     FastLED.show();  // display this frame
     FastLED.delay(1000 / 60);
   }
-  getFreq();
-  on_off_sound();
-  btnTick();
-  strikeTick();
-  swingTick();
   batteryTick();
 }
 // --- MAIN LOOP---
@@ -458,15 +459,15 @@ void getFreq() {
       GYR = sqrt((long)GYR);
       COMPL = ACC + GYR;
 
-      /*  // debugging the IMU
-         Serial.print("$");
-         Serial.print(gyroX);
-         Serial.print(" ");
-         Serial.print(gyroY);
-         Serial.print(" ");
-         Serial.print(gyroZ);
-         Serial.println(";");
-         Serial.println(GYR);*/
+      // debugging the IMU
+        //  Serial.print("$");
+        //  Serial.print(gyroX);
+        //  Serial.print(" ");
+        //  Serial.print(gyroY);
+        //  Serial.print(" ");
+        //  Serial.print(gyroZ);
+        //  Serial.println(";");
+        //  Serial.println(GYR);
 
       freq = (long)COMPL * COMPL / 1500;  // parabolic tone change
       freq = constrain(freq, 18, 300);
