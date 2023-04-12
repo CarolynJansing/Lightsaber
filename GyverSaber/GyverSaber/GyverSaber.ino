@@ -50,18 +50,14 @@
 #define DEBUG 1  // debug information in Serial (1 - allow, 0 - disallow)
 // ---------------------------- SETTINGS -------------------------------
 
-#define LED_PIN D4
-#define BTN D7
-#define IMU_GND A1
-#define SD_GND A0
-#define VOLT_PIN A6
-#define BTN_LED D3 // -1 -> disable, 4 original
+#define LED_PIN 2
+#define BTN 13
+#define BTN_LED 0 // -1 -> disable, 4 original
 #define SD_ChipSelectPin 10
 
 // -------------------------- LIBS ---------------------------
 #include <avr/pgmspace.h>  // PROGMEM library
-#include <SD.h>
-#include <TMRpcm.h>  // audio from SD library
+// #include <TMRpcm.h>  // audio from SD library
 #include "Wire.h"
 #include "I2Cdev.h"
 #include "MPU6050.h"
@@ -72,9 +68,9 @@
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 
-TMRpcm tmrpcm;
+// TMRpcm tmrpcm;
 MPU6050 accelgyro;
-SoftwareSerial mySoftwareSerial(D5, D6);  // RX, TX
+SoftwareSerial mySoftwareSerial(14, 12);  // RX, TX
 
 DFRobotDFPlayerMini myDFPlayer;
 void printDetail(uint8_t type, int value);
@@ -117,7 +113,7 @@ int BUFFER[10];
 // --------------------------------- SOUNDS ---------------------------------
 
 void setup() {
-  pinMode(D7, INPUT_PULLUP);
+  pinMode(13, INPUT_PULLUP);
   Serial.begin(115200);
 
   FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
@@ -147,12 +143,9 @@ void setup() {
 
   // ---- PIN-Settings ----
   pinMode(BTN, INPUT_PULLUP);
-  pinMode(IMU_GND, OUTPUT);
-  pinMode(SD_GND, OUTPUT);
   if (BTN_LED > 0)
     pinMode(BTN_LED, OUTPUT);
-  digitalWrite(IMU_GND, 0);
-  digitalWrite(SD_GND, 0);
+    
   if (BTN_LED > 0)
     digitalWrite(BTN_LED, 1);
   //---- PIN-Settings ----
@@ -192,19 +185,19 @@ void setup() {
   }
 
   setColor(nowColor);
-  byte capacity = voltage_measure();                        // get battery level
-  capacity = map(capacity, 100, 0, (NUM_LEDS / 2 - 1), 1);  // convert into blade lenght
+  // byte capacity = voltage_measure();                        // get battery level
+  // capacity = map(capacity, 100, 0, (NUM_LEDS / 2 - 1), 1);  // convert into blade lenght
   if (DEBUG) {
     Serial.print(F("Battery: "));
-    Serial.println(capacity);
+    // Serial.println(capacity);
   }
 
-  for (char i = 0; i <= capacity; i++) {  // show battery level
-    setPixel(i, red, green, blue);
-    setPixel((NUM_LEDS - 1 - i), red, green, blue);
-    FastLED.show();
-    delay(25);
-  }
+  // for (char i = 0; i <= capacity; i++) {  // show battery level
+  //   setPixel(i, red, green, blue);
+  //   setPixel((NUM_LEDS - 1 - i), red, green, blue);
+  //   FastLED.show();
+  //   delay(25);
+  // }
   delay(1000);  // 1 second to show battery level
   setAll(0, 0, 0);
   FastLED.setBrightness(BRIGHTNESS);  // set bright
@@ -226,7 +219,7 @@ void loop() {
     FastLED.show();  // display this frame
     FastLED.delay(1000 / 60);
   }
-  batteryTick();
+  // batteryTick();
 }
 // --- MAIN LOOP---
 
@@ -298,20 +291,21 @@ void btnTick() {
 void on_off_sound() {
   if (ls_chg_state) {  // if change flag
     if (!ls_state) {   // if GyverSaber is turned off
-      if (voltage_measure() > 10 || !BATTERY_SAFE) {
-        if (DEBUG)
-          Serial.println(F("SABER ON"));
-        myDFPlayer.playFolder(1, 3);  // Play On sound
-        delay(200);
-        light_up();
-        delay(200);
-        bzzz_flag = 1;
-        ls_state = true;  // remember that turned on
-        if (HUMmode) {
-          if (!tenshiMode) { myDFPlayer.loop(1); }
-        } else {
-        }
-      } else {
+      // if (voltage_measure() > 10 || !BATTERY_SAFE) {
+      //   if (DEBUG)
+      //     Serial.println(F("SABER ON"));
+      //   myDFPlayer.playFolder(1, 3);  // Play On sound
+      //   delay(200);
+      //   light_up();
+      //   delay(200);
+      //   bzzz_flag = 1;
+      //   ls_state = true;  // remember that turned on
+      //   if (HUMmode) {
+      //     if (!tenshiMode) { myDFPlayer.loop(1); }
+      //   } else {
+      //   }
+      // } else 
+      // {
         if (DEBUG)
           Serial.println(F("LOW VOLTAGE!"));
         for (int i = 0; i < 5; i++) {
@@ -322,7 +316,7 @@ void on_off_sound() {
             digitalWrite(BTN_LED, 1);
           delay(400);
         }
-      }
+      // }
     } else {  // if GyverSaber is turned on
       tenshiMode = false;
       bzzz_flag = 0;
@@ -352,7 +346,7 @@ void on_off_sound() {
   long delta = millis() - bzzTimer;
   if ((delta > 3) && bzzz_flag && !HUMmode) {
     if (strike_flag) {
-      tmrpcm.disable();
+      // tmrpcm.disable();
       strike_flag = 0;
     }
     toneAC(freq_f, 1);
@@ -552,33 +546,33 @@ void setColor(byte color) {
 
 void batteryTick() {
   if (millis() - battery_timer > 30000 && ls_state && BATTERY_SAFE) {
-    if (voltage_measure() < 15) {
-      ls_chg_state = 1;
-    }
+    // if (voltage_measure() < 15) {
+    //   ls_chg_state = 1;
+    // }
     battery_timer = millis();
   }
 }
 
-byte voltage_measure() {
-  int R1 = 51000;
-  int R2 = 100000;
-  voltage = 0;
-  for (int i = 0; i < 10; i++) {
-    voltage += (float)analogRead(VOLT_PIN) * 5 / 1023 * (R1 + R2) / R2;
-  }
-  voltage = voltage / 10;
-  int volts = voltage / 3 * 100;  // 3 cells!!!
-  if (volts > 387)
-    return map(volts, 420, 387, 100, 77);
-  else if ((volts <= 387) && (volts > 375))
-    return map(volts, 387, 375, 77, 54);
-  else if ((volts <= 375) && (volts > 368))
-    return map(volts, 375, 368, 54, 31);
-  else if ((volts <= 368) && (volts > 340))
-    return map(volts, 368, 340, 31, 8);
-  else if (volts <= 340)
-    return map(volts, 340, 260, 8, 0);
-}
+// byte voltage_measure() {
+//   int R1 = 51000;
+//   int R2 = 100000;
+//   voltage = 0;
+//   for (int i = 0; i < 10; i++) {
+//     voltage += (float)0.5* 5 / 1023 * (R1 + R2) / R2;
+//   }
+//   voltage = voltage / 10;
+//   int volts = voltage / 3 * 100;  // 3 cells!!!
+//   if (volts > 387)
+//     return map(volts, 420, 387, 100, 77);
+//   else if ((volts <= 387) && (volts > 375))
+//     return map(volts, 387, 375, 77, 54);
+//   else if ((volts <= 375) && (volts > 368))
+//     return map(volts, 375, 368, 54, 31);
+//   else if ((volts <= 368) && (volts > 340))
+//     return map(volts, 368, 340, 31, 8);
+//   else if (volts <= 340)
+//     return map(volts, 340, 260, 8, 0);
+//  }
 
 // COOLING: How much does the air cool as it rises?
 // Less cooling = taller flames.  More cooling = shorter flames.
