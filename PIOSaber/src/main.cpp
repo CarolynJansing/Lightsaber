@@ -4,7 +4,7 @@
 #include "button.hpp"
 #include "battery.hpp"
 #include "accelerometer.hpp"
-
+#include "wlan.hpp"
 #include <config.hpp>
 
 #include <EEPROM.h>
@@ -91,7 +91,7 @@ void swingTick() {
 
 void setup() {
   Serial.begin(115200);
-
+  initWiFi();
   FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(255);  // ~40% of LED strip brightness
   setAll({0, 0, 0});             // and turn it off
