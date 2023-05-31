@@ -52,6 +52,7 @@ void getFreq(const LightSaberEnabled& lightSaberEnabled, const float& k) {
       freq = constrain(freq, 18, 300);
       freq_f = freq * k + freq_f * (1 - k);  // smooth filter
       mpuTimer = micros();
+      
     }
   }
 }

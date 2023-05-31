@@ -1,11 +1,19 @@
-#ifndef WIFI_INIT_H
-#define WIFI_INIT_H
 
-#include <ESP8266WiFi.h>
+#pragma once
+//#ifndef WIFI_INIT_H
+//#define WIFI_INIT_H
+#include <wlan.hpp>
+#include <WiFi.h>
+#include <PubSubClient.h>
+///#include <ESP8266WiFi.h>
 
-const char* ssid = "IhrWLANName";
-const char* password = "IhrWLANPasswort";
+char* ssidmqtt = "WLANrouterRPPT";
+char* passwordmqtt = "bbsbrinkstrasse";
+const char* MQTT_BROKER = "Moquitto";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 void initWiFi();
-
-#endif
+void connected();
+//#endif

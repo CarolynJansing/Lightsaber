@@ -1,12 +1,9 @@
 #include <wlan.hpp>
-#include <ESP8266WiFi.h>
+#include <WiFi.h>
 #include <PubSubClient.h>
 
-const char* ssid = "IhrWLANName";
-const char* password = "IhrWLANPasswort";
-
 void initWiFi() {
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssidmqtt,passwordmqtt);
   
   Serial.print("Verbinde mit WLAN...");
   while (WiFi.status() != WL_CONNECTED) {
@@ -17,4 +14,14 @@ void initWiFi() {
   Serial.println();
   Serial.print("Verbunden mit WLAN. IP-Adresse: ");
   Serial.println(WiFi.localIP());
+}
+void connected(){
+  if(!client.connected()){
+    while (!client.connected())
+    {
+      client.connect("ESP8266Client");
+      delay(100);
+    } 
+  }
+  client.loop();
 }

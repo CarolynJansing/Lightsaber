@@ -91,12 +91,11 @@ void swingTick() {
 
 void setup() {
   Serial.begin(115200);
-  initWiFi();
   FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(255);  // ~40% of LED strip brightness
   setAll({0, 0, 0});             // and turn it off
-
-  // Audio SetUp
+  initWiFi();
+    // Audio SetUp
   dfPlayerSerial.begin(9600);
   Serial.println(F("DFRobot DFPlayer Mini Demo"));
   Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
@@ -172,6 +171,7 @@ void setup() {
 }
 
 void loop() {
+  connected();
   if (!tenshiModeEnabled) {
     randomPULSE(lightSaberEnabled, k);
     getFreq(lightSaberEnabled, k);
@@ -180,6 +180,7 @@ void loop() {
     strikeTick();
     swingTick();
   } else {
+
     on_off_sound(lightSaberEnabled, tenshiModeEnabled, storeColorAndHumToEEPROM, isLightsaberHumming, nowColor);
     btnTick(lightSaberEnabled, tenshiModeEnabled, isLightsaberHumming, nowColor, storeColorAndHumToEEPROM);
     Fire2012(); // run simulation frame
