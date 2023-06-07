@@ -7,12 +7,11 @@
 #include <PubSubClient.h>
 ///#include <ESP8266WiFi.h>
 
-char* ssidmqtt = "WLANrouterRPPT";
-char* passwordmqtt = "bbsbrinkstrasse";
-const char* MQTT_BROKER = "Moquitto";
+extern char* ssidmqtt;
+extern char* passwordmqtt;
+extern char* MQTT_BROKER;
 
-WiFiClient espClient;
-PubSubClient client(espClient);
+extern WiFiClient espClient;
 
 void initWiFi();
 void connected();

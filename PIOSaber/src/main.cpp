@@ -171,7 +171,7 @@ void setup() {
 }
 
 void loop() {
-  connected();
+  //connected();
   if (!tenshiModeEnabled) {
     randomPULSE(lightSaberEnabled, k);
     getFreq(lightSaberEnabled, k);

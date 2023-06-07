@@ -1,6 +1,11 @@
 #include <wlan.hpp>
-#include <WiFi.h>
-#include <PubSubClient.h>
+
+char* ssidmqtt = "WLANrouterRPPT";
+char* passwordmqtt = "bbsbrinkstrasse";
+char* MQTT_BROKER = "192.168.1.2";
+
+WiFiClient espClient;
+PubSubClient client(espClient);
 
 void initWiFi() {
   WiFi.begin(ssidmqtt,passwordmqtt);
@@ -17,11 +22,8 @@ void initWiFi() {
 }
 void connected(){
   if(!client.connected()){
-    while (!client.connected())
-    {
       client.connect("ESP8266Client");
       delay(100);
-    } 
   }
   client.loop();
 }
