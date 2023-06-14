@@ -2,8 +2,9 @@
 #pragma once
 //#ifndef WIFI_INIT_H
 //#define WIFI_INIT_H
-#include <wlan.hpp>
-#include <WiFi.h>
+//#include <wlan.hpp>
+//#include <WiFi.h>
+#include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 ///#include <ESP8266WiFi.h>
 
