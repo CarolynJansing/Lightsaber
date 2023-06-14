@@ -159,7 +159,6 @@ void setup() {
 }
 
 void loop() {
-  connected();
   if (!tenshiModeEnabled) {
     randomPULSE(lightSaberEnabled, k);
     getFreq(lightSaberEnabled, k);
@@ -175,5 +174,7 @@ void loop() {
     FastLED.show(); // display this frame
     FastLED.delay(1000 / 60);
   }
+    connected();
+
   // batteryTick(lightSaberEnabled);
 }

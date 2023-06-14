@@ -1,8 +1,8 @@
 #include <wlan.hpp>
 
-char* ssidmqtt = "WIFI_SSID";
-char* passwordmqtt = "WIFI_KEY";
-char* MQTT_BROKER = "test.mosquitto.org";
+char* ssidmqtt = "Joel's Galaxy S22 Ultra";
+char* passwordmqtt = "12345678";
+char* MQTT_BROKER = "192.168.21.15";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -49,14 +49,15 @@ void reconnect() {
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
-      delay(5000);
+      //delay(5000);
     }
   }
 }
 void connected() {
-if (!client.connected()) {
-    reconnect();
-  }
+//if (!client.connected()) {
+//  Serial.print("UwU");
+//    reconnect();
+//  }
   //client.loop();
 
   unsigned long now = millis();
@@ -66,6 +67,6 @@ if (!client.connected()) {
     snprintf (msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("caro_pub", msg);
+    client.publish("caro_pub", "UwU");
   }
 }
