@@ -11,18 +11,6 @@
 
 
 
-/**
- * HEY CARO!
- *
- * Ich habe nun den Code aufgeräumt & (zumindest oberflächlich) neu strukturiert.
- * Viel Spaß beim Nutzen (ich hoffe, ich habe nichts kaputt gemacht :D)
- * 
- * Du solltest auf jeden Fall die neuen Variablen-namen verstehen, da diese
- * hoffentlich etwas aussagekräftiger sind...
- */
-
-
-
 // Variables shared with other files
 LightSaberEnabled lightSaberEnabled;
 bool storeColorAndHumToEEPROM, isLightsaberHumming;
@@ -171,7 +159,7 @@ void setup() {
 }
 
 void loop() {
-  //connected();
+  connected();
   if (!tenshiModeEnabled) {
     randomPULSE(lightSaberEnabled, k);
     getFreq(lightSaberEnabled, k);
