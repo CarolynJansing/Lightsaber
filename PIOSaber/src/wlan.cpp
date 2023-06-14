@@ -1,8 +1,8 @@
 #include <wlan.hpp>
 
-char* ssidmqtt = "Joel's Galaxy S22 Ultra";
-char* passwordmqtt = "12345678";
-char* MQTT_BROKER = "192.168.21.15";
+char* ssidmqtt = "raspi-webgui";
+char* passwordmqtt = "ChangeMe";
+char* mqtt_server = "169.254.203.208";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -14,7 +14,8 @@ int value = 0;
 
 
 void initWiFi() {
-delay(10);
+  
+  delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
@@ -34,6 +35,7 @@ delay(10);
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  client.setServer("Moquitto", 1883);
 }
 void reconnect() {
   // Loop until we're reconnected
@@ -68,5 +70,5 @@ void connected() {
     Serial.print("Publish message: ");
     Serial.println(msg);
     client.publish("caro_pub", "UwU");
-  }
+    Serial.println("UwU");  }
 }

@@ -10,7 +10,7 @@
 
 extern char* ssidmqtt;
 extern char* passwordmqtt;
-extern char* MQTT_BROKER;
+extern char* mqtt_server;
 
 extern WiFiClient espClient;
 
