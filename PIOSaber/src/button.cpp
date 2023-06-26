@@ -1,5 +1,5 @@
-#include "button.hpp"
-
+#include "button.hpp" 
+#include "mqtt.hpp"
 #include <leds.hpp>
 #include <sounds.hpp>
 #include <config.hpp>
@@ -15,6 +15,7 @@ void btnTick(LightSaberEnabled& lightSaberEnabled, bool& tenshiModeEnabled, bool
     lastClickState = true;
     clickCounter++;
     lastClickStartedOn = millis();
+    //new_mqtt_event(MQTT_EVENT::BTN_PRESS);
     if (DEBUG) {
       Serial.print(F("BTN PRESS (STATE "));
       Serial.print(currentClickState);
@@ -47,11 +48,13 @@ void btnTick(LightSaberEnabled& lightSaberEnabled, bool& tenshiModeEnabled, bool
           nowColor = 0;
         setColor(nowColor);
         setAll(lightSaberColor);
+        //new_mqtt_event(MQTT_EVENT::COLORCHANGE);
         storeColorAndHumToEEPROM = true;
       }
       if (clickCounter == 4) {
         tenshiModeEnabled = true;
         dfPlayer.playFolder(1, 33);
+        //new_mqtt_event(MQTT_EVENT::TENSHI);
       }
       if (clickCounter == 5) {  // 5 press count
         isLightsaberHumming = !isLightsaberHumming;

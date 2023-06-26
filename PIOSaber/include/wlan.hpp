@@ -8,12 +8,12 @@
 #include <PubSubClient.h>
 ///#include <ESP8266WiFi.h>
 
-extern char* ssidmqtt;
-extern char* passwordmqtt;
-extern char* mqtt_server;
+extern const char* ssidmqtt;
+extern const char* passwordmqtt;
+extern const char* mqtt_server;
 
 extern WiFiClient espClient;
-
+extern PubSubClient client;
 void initWiFi();
 void connected();
 //#endif

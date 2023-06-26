@@ -5,7 +5,7 @@
 #include <config.hpp>
 
 #include <EEPROM.h>
-
+#include <mqtt.hpp>
 SoftwareSerial dfPlayerSerial(D6, D5); // RX, TX
 DFRobotDFPlayerMini dfPlayer;
 unsigned long ACC, GYR, COMPL;
@@ -64,6 +64,7 @@ void on_off_sound(LightSaberEnabled& lightSaberEnabled, bool& tenshiModeEnabled,
             if (DEBUG){
                 Serial.println(F("SABER ON"));
             }
+            //new_mqtt_event(MQTT_EVENT::ON);
             dfPlayer.playFolder(1, 3);  // Play On sound
             delay(200);
             light_up();
@@ -97,6 +98,7 @@ void on_off_sound(LightSaberEnabled& lightSaberEnabled, bool& tenshiModeEnabled,
       delay(300);
       if (DEBUG)
         Serial.println(F("SABER OFF"));
+      //new_mqtt_event(MQTT_EVENT::OFF);
       lightSaberEnabled.current = false;
       if (storeColorAndHumToEEPROM) {
         storeColorAndHumToEEPROM = false;

@@ -1,8 +1,8 @@
-#include <wlan.hpp>
+#include <wlan.hpp> 
 
-char* ssidmqtt = "raspi-webgui";
-char* passwordmqtt = "ChangeMe";
-char* mqtt_server = "169.254.203.208";
+const char* ssidmqtt = "FRITZ!Box 6591 Cable FW";
+const char* passwordmqtt = "23268987090163585102";
+const char* mqtt_server = "192.168.178.70";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -14,8 +14,6 @@ int value = 0;
 
 
 void initWiFi() {
-  
-  delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
@@ -35,40 +33,29 @@ void initWiFi() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
-  client.setServer("Moquitto", 1883);
 }
+
 void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    String clientId = "esp_tschorn_pub";
-    if (client.connect(clientId.c_str())) { //client ID festlegen
-      Serial.println("connected");
-      // Once connected, publish an announcement...
-      client.publish("pub_tschorn", "erste Nachricht"); // festlegen des Topics & festlegen, was die erste Nachricht ist
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      //delay(5000);
-    }
+  Serial.print("Attempting MQTT connection...");
+  client.setServer(mqtt_server, 1883);
+  String clientId = "esp_lightsaber_pub";
+  if (client.connect(clientId.c_str())) { //client ID festlegen
+    Serial.println("connected");
+    // Once connected, publish an announcement...
+    client.publish("caro_pub", "erste Nachricht"); // festlegen des Topics & festlegen, was die erste Nachricht ist
+  } else {
+    Serial.print("failed, rc=");
+    Serial.print(client.state());
+    Serial.println(" try again in 5 seconds");
+    // Wait 2 seconds before retrying
+    delay(2000);
   }
+  
 }
 void connected() {
-//if (!client.connected()) {
-//  Serial.print("UwU");
-//    reconnect();
-//  }
-  //client.loop();
-
-  unsigned long now = millis();
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
-    ++value;
-    snprintf (msg, MSG_BUFFER_SIZE, "hello world #%ld", value);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    client.publish("caro_pub", "UwU");
-    Serial.println("UwU");  }
+  if (!client.connected()) {
+    Serial.println("Reconnecting to MQTT(this may cause the lightsaber to hang temporarly)...");
+    reconnect();
+  }
 }

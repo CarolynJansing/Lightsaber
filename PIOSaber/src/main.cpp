@@ -5,6 +5,7 @@
 #include "battery.hpp"
 #include "accelerometer.hpp"
 #include "wlan.hpp"
+#include "mqtt.hpp"
 #include <config.hpp>
 
 #include <EEPROM.h>
@@ -30,6 +31,7 @@ void strikeTick() {
   if ((ACC > STRIKE_THR) && (ACC < STRIKE_S_THR)) {
     soundIndex = random(8);
     Serial.println("Strike play");
+    ////new_mqtt_event(MQTT_EVENT::STRIKE);
     dfPlayer.playFolder(1, random(12, 20));
     hit_flash();
     if (!isLightsaberHumming)
@@ -41,6 +43,7 @@ void strikeTick() {
   if (ACC >= STRIKE_S_THR) {
     soundIndex = random(8);
     Serial.println("Strike play S");
+    //new_mqtt_event(MQTT_EVENT::STRIKE_S);
     dfPlayer.playFolder(1, random(4, 12));
     hit_flash();
     if (!isLightsaberHumming)
@@ -58,6 +61,7 @@ void swingTick() {
     if (((millis() - soundSwingStartedTime) > SWING_TIMEOUT) && isLightsaberSwinging && !isLightsaberStriking) {
       if (GYR >= SWING_THR) {
         Serial.println("SWING NORMAL");
+        //new_mqtt_event(MQTT_EVENT::SWING_NORMAL);
         soundIndex = random(5);
         dfPlayer.playFolder(1, random(24, 29));
         soundHumStartedTime = millis() - 9000 + soundTimeSwing[soundIndex];
@@ -66,7 +70,7 @@ void swingTick() {
       }
       if ((GYR > SWING_L_THR) && (GYR < SWING_THR)) {
         Serial.println("SWING LARGE");
-
+        //new_mqtt_event(MQTT_EVENT::SWING_LARGE);
         soundIndex = random(5);
         dfPlayer.playFolder(1, random(20, 24));
         soundHumStartedTime = millis() - 9000 + soundTimeSwingLong[soundIndex];
@@ -82,7 +86,7 @@ void setup() {
   FastLED.addLeds<WS2811, LED_PIN, BRG>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(255);  // ~40% of LED strip brightness
   setAll({0, 0, 0});             // and turn it off
-  initWiFi();
+  //initWiFi();
     // Audio SetUp
   dfPlayerSerial.begin(9600);
   Serial.println(F("DFRobot DFPlayer Mini Demo"));
@@ -167,14 +171,13 @@ void loop() {
     strikeTick();
     swingTick();
   } else {
-
     on_off_sound(lightSaberEnabled, tenshiModeEnabled, storeColorAndHumToEEPROM, isLightsaberHumming, nowColor);
     btnTick(lightSaberEnabled, tenshiModeEnabled, isLightsaberHumming, nowColor, storeColorAndHumToEEPROM);
     Fire2012(); // run simulation frame
     FastLED.show(); // display this frame
     FastLED.delay(1000 / 60);
   }
-    connected();
+    //connected();
 
-  // batteryTick(lightSaberEnabled);
+  batteryTick(lightSaberEnabled);
 }
